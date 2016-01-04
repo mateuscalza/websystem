@@ -1,5 +1,5 @@
 // Require websystem
 var websystem = require('./');
 
-// Start web server that provides control (socket dependent)
+// Start web server that provides control
 websystem.startWebServer();
