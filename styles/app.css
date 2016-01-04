@@ -1,0 +1,160 @@
+/* Colors */
+$dark-gray: #222;
+$gray: #444444;
+$light-gray: #ecf0f1;
+$white: #ffffff;
+$red: #e74c3c;
+
+/* Definitons */
+$default-shadow: 0px 3px 6px rgba(0, 0, 0, 0.5);
+$radius: 8px;
+
+html, body, #divisions {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+}
+
+body {
+    background: $light-gray url('/images/wallpapers/1.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    color: $gray;
+    font-family: 'Segoe UI', 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+*, *:after, *:before {
+    box-sizing: border-box;
+}
+
+.window {
+    position: absolute 100px 100px;
+    width: 500px;
+    height: 300px;/*
+    border-width: 1px 1px 0px 1px;
+    border-style: solid;
+    border-color: color(black alpha(10%));*/
+    box-shadow: 0px 4px 0px color(black alpha(10%));
+
+    .title {
+        display: block;
+        width: 100%;
+        height: 30px;
+        line-height: 30px;
+        padding: 0px 10px;
+        background: color(white alpha(30%));
+    }
+    .content {
+        position: relative;
+        display: block;
+        padding: 10px;
+        background: white;
+        width: 100%;
+        height: 270px;
+    }
+}
+
+#bar {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    width: 100%;
+    height: 50px;
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        li {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            margin: 0;
+            padding: 0;
+            a {
+                margin: 0;
+                padding: 0;
+                display: block;
+                width: 100%;
+                height: 50px;
+                line-height: 50px;
+                text-decoration: none;
+                text-align: center;
+                font-size: 30px;
+                text-shadow: 0px 2px 0px color(black alpha(10%));
+                color: white;
+                i {
+                    border-bottom: 3px solid white;
+                    box-shadow: 0px 2px 0px color(black alpha(10%));
+                }
+            }
+            &#switch-launcher {
+                background: white;
+                a {color: $gray;}
+            }
+        }
+    }
+}
+
+/*
+.box {
+    position: relative;
+
+    height: 100%;
+
+    padding: 10px;
+
+    overflow-y: auto;
+
+    .item {
+        position: absolute 10px 10px;
+
+        $icon-size: 80px;
+        $desc-height: 20px;
+
+        width: $icon-size;
+        height: 110px;
+
+        transition: 1s all ease;
+        text-align: center;
+
+        cursor: pointer;
+
+        text-decoration: none;
+
+        color: $white;
+
+        i {
+            transition: 1s all ease;
+            display: block;
+            background: $red;
+            color: $white;
+            width: $icon-size;
+            line-height: $icon-size;
+            height: $icon-size;
+            font-style: normal;
+            border-radius: $radius;
+            font-size: 18px;
+            box-shadow: $default-shadow;
+        }
+
+        span {
+            display: block;
+            padding: 5px 0px;
+        }
+
+        &.selected i {
+            background: $dark-gray;
+        }
+    }
+}
+
+.button:hover, .item:hover i {
+    box-shadow: $disperded-shadow;
+}
+
+.button:active, .item:active i {
+    margin: 1px 0px 0px;
+    box-shadow: inset 0px 0px 0px rgba(0,0,0,0), 0px 0px 0px rgba(0,0,0,0);
+}
+*/
