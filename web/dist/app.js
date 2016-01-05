@@ -7,10 +7,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var defaults = {
     window: {
         width: function width() {
-            return $(window).width() * 0.70;
+            return Math.min($(window).width() * 0.7, 400);
         },
         height: function height() {
-            return Math.max(Math.min($(window).height() * 0.5, $(window).height() - $('#bar').height()), 120);
+            return Math.max(Math.min($(window).height() * 0.6, $(window).height() - $('#bar').height()), 120);
         },
         left: function left() {
             return Math.max(20, $(window).width() / 2.5 - this.width() / 2);
