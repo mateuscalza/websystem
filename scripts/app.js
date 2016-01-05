@@ -1,7 +1,7 @@
 var defaults = {
     window: {
-        width: () => $(window).width() * 0.70,
-        height: () => Math.max(Math.min($(window).height() * 0.5, $(window).height() - $('#bar').height()), 120),
+        width: () => Math.min($(window).width() * 0.7, 400),
+        height: () => Math.max(Math.min($(window).height() * 0.6, $(window).height() - $('#bar').height()), 120),
         left() {
             return Math.max(20, $(window).width() / 2.5 - this.width() / 2);
         },

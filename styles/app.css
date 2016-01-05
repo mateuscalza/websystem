@@ -31,10 +31,7 @@ body {
 .window {
     position: absolute 0px 0px;
     width: 500px;
-    height: 300px;/*
-    border-width: 1px 1px 0px 1px;
-    border-style: solid;
-    border-color: color(black alpha(10%));*/
+    height: 300px;
     box-shadow: $default-shadow;
 
     .title {
@@ -53,7 +50,7 @@ body {
             line-height: 30px;
             width: 40px;
             text-align: center;
-            cursor: alias;
+            cursor: pointer;
         }
     }
     .content {
@@ -94,10 +91,10 @@ body {
                 font-size: 30px;
                 text-shadow: 0px 3px 0px color(black alpha(10%));
                 color: white;
-                i {
+                i {/*
                     border-bottom: 3px solid white;
                     border-radius: 1px;
-                    box-shadow: 0px 3px 0px color(black alpha(10%));
+                    box-shadow: 0px 3px 0px color(black alpha(10%));*/
                 }
             }
         }

@@ -1,0 +1,162 @@
+/// <reference path="../tools/typings/tsd.d.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var zIndex = 1;
+var WindowDefaults = (function () {
+    function WindowDefaults() {
+    }
+    WindowDefaults.width = function () {
+        return Math.min($(window).width() * 0.7, 400);
+    };
+    WindowDefaults.height = function () {
+        return Math.max(Math.min($(window).height() * 0.6, $(window).height() - $('#bar').height()), 120);
+    };
+    WindowDefaults.left = function () {
+        return Math.max(20, $(window).width() / 2.5 - this.width() / 2);
+    };
+    WindowDefaults.top = function () {
+        return Math.max(20, $(window).height() / 2.5 - this.height() / 2);
+    };
+    WindowDefaults.set = function (windowElement, plus) {
+        plus = typeof plus === 'undefined' ? 0 : plus;
+        windowElement.width(this.width()).height(this.height()).css({
+            top: this.top() + plus,
+            left: this.left() + plus
+        }).find('.content').height(this.height() - 50);
+    };
+    return WindowDefaults;
+})();
+var MenuIcon = (function () {
+    function MenuIcon(icon, name) {
+        this.element = $('<a></a>', {
+            href: 'javascript:;',
+            title: name
+        }).append($('<i></i>', {
+            addClass: 'fa ' + icon
+        }));
+        $('#bar ul').append($('<li></li>').append(this.element));
+    }
+    return MenuIcon;
+})();
+var WindowElement = (function () {
+    function WindowElement(title) {
+        var newWindowElement = $('<div></div>', {
+            addClass: 'window'
+        });
+        this.titleElement = $('<span></span>', {
+            addClass: 'title'
+        }).text(title).append('<i class="fa fa-minus hide"></i>');
+        this.contentElement = $('<div></div>', {
+            addClass: 'content'
+        });
+        this.titleElement.on('dblclick', function (evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            var windowElement = $(this).parent('.window');
+            var height = $(window).height() - $('#bar').height();
+            var width = $(window).width();
+            if (windowElement.width() !== width && windowElement.height() !== height) {
+                windowElement.width(width).height(height).css({
+                    top: 0,
+                    left: 0
+                }).children('.content').height(height - 50);
+            }
+            else {
+                WindowDefaults.set(windowElement, 0);
+            }
+        }).find('.hide').on('click', function () {
+            $(this).closest('.window').hide();
+        });
+        newWindowElement.hide();
+        newWindowElement.append(this.titleElement, this.contentElement).appendTo(document.body);
+        WindowDefaults.set(newWindowElement, ($('.window').length - 1) * 35);
+        newWindowElement.draggable({
+            containment: 'body',
+            handle: '.title',
+            start: function () {
+                var actualZIndex = $(this).css('zIndex');
+                if (!$.isNumeric(actualZIndex) || parseInt(actualZIndex) != zIndex) {
+                    $(this).css('zIndex', ++zIndex);
+                }
+            }
+        });
+        newWindowElement.resizable({
+            resize: function () {
+                $(this).find('.content').height($(this).height() - 50);
+            },
+            stop: function () {
+                $(this).find('.content').height($(this).height() - 50);
+            },
+            handles: 'all',
+            minHeight: 120,
+            minWidth: 120
+        });
+        newWindowElement.on('click', function () {
+            var actualZIndex = $(this).css('zIndex');
+            if (!$.isNumeric(actualZIndex) || parseInt(actualZIndex) != zIndex) {
+                $(this).css('zIndex', ++zIndex);
+            }
+        });
+        this.element = newWindowElement;
+    }
+    return WindowElement;
+})();
+var Application = (function () {
+    function Application() {
+        var self = this;
+        self.icon.element.click(function () {
+            self.show();
+        });
+    }
+    Application.prototype.show = function () {
+        this.windows.forEach(function (windowElement) {
+            windowElement.element.toggle();
+        });
+    };
+    return Application;
+})();
+var FileManager = (function (_super) {
+    __extends(FileManager, _super);
+    function FileManager() {
+        this.name = 'File Manager';
+        this.windows = [
+            new WindowElement(this.name)
+        ];
+        this.icon = new MenuIcon('fa-folder', this.name);
+        _super.call(this);
+    }
+    return FileManager;
+})(Application);
+var Calc = (function (_super) {
+    __extends(Calc, _super);
+    function Calc() {
+        this.name = 'Calculator';
+        this.main = new WindowElement(this.name);
+        this.windows = [this.main];
+        this.icon = new MenuIcon('fa-calculator', this.name);
+        _super.call(this);
+        this.mount();
+    }
+    Calc.prototype.mount = function () {
+        this.input = $('<textarea></textarea>', {
+            rows: 1
+        }).appendTo(this.main.contentElement);
+        this.button = $('<button></button>', {
+            text: 'Calc'
+        }).appendTo(this.main.contentElement).click(this.calculate.bind(this));
+        this.results = $('<ul></ul>').appendTo(this.main.contentElement);
+    };
+    Calc.prototype.calculate = function (event) {
+        var result = $('<li></li>');
+        result.text(Function('return ' + this.input.val())());
+        this.results.prepend(result);
+    };
+    return Calc;
+})(Application);
+new FileManager();
+new Calc();
+
+//# sourceMappingURL=main.js.map
