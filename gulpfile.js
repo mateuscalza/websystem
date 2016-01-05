@@ -8,11 +8,10 @@ const watch = require('gulp-watch');
 
 gulp.task('js', () => {
 	return gulp.src('scripts/**/*.js')
+		.pipe(watch('./scripts/**/*.js'))
 		.pipe(sourcemaps.init())
-		.pipe(babel({
-			presets: ['es2015']
-		}))
-		.pipe(concat('all.js'))
+		.pipe(babel())
+		//.pipe(concat('all.js'))
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest('web/dist'))
 		.pipe(notify('JavaScript is okay Calza!'));
