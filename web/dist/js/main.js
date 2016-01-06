@@ -5,6 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var zIndex = 1;
+var math;
 var WindowDefaults = (function () {
     function WindowDefaults() {
     }
@@ -141,17 +142,36 @@ var Calc = (function (_super) {
         this.mount();
     }
     Calc.prototype.mount = function () {
-        this.input = $('<textarea></textarea>', {
-            rows: 1
+        this.main.contentElement.addClass('calc');
+        this.input = $('<input/>', {
+            rows: 1,
+            addClass: 'calc-input'
         }).appendTo(this.main.contentElement);
         this.button = $('<button></button>', {
-            text: 'Calc'
+            text: 'Calc',
+            addClass: 'calc-button'
         }).appendTo(this.main.contentElement).click(this.calculate.bind(this));
-        this.results = $('<ul></ul>').appendTo(this.main.contentElement);
+        this.results = $('<ul></ul>', {
+            addClass: 'calc-results'
+        }).appendTo(this.main.contentElement);
     };
     Calc.prototype.calculate = function (event) {
+        var formula = this.input.val();
         var result = $('<li></li>');
-        result.text(Function('return ' + this.input.val())());
+        try {
+            if (!formula.trim().length) {
+                throw new Error('Empty formula');
+            }
+            var formulaElement = $('<span></span>', {
+                addClass: 'info'
+            });
+            formulaElement.text(formula.replace(/([^A-Za-z0-9\.])/gi, ' $1 ').replace(/\s\s+/gi, ' ').trim());
+            result.append(math.format(math.eval(formula)), formulaElement);
+        }
+        catch (err) {
+            var errElement = $('<i></i>').text(err.message);
+            result.append(errElement);
+        }
         this.results.prepend(result);
     };
     return Calc;

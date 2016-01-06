@@ -1,6 +1,6 @@
 {
   "name": "websystem",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Manage your operating system remotely.",
   "main": "index.js",
   "scripts": {

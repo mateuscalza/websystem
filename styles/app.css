@@ -1,13 +1,13 @@
 /* Colors */
 $dark-gray: #222;
-$gray: #444444;
+$gray: #4F5050;
 $light-gray: #ecf0f1;
 $white: #ffffff;
 $red: #e74c3c;
 
 /* Definitons */
 $default-shadow: 0px 2px 6px rgba(0, 0, 0, 0.20);
-$radius: 8px;
+$radius: 4px;
 
 html, body, #divisions {
     margin: 0px;
@@ -24,15 +24,61 @@ body {
     font-family: 'Segoe UI', 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
+#wallpaper {
+    width: 100%;
+    height: 100%;
+    background: $light-gray url('/images/wallpapers/1.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    position: absolute 0px 0px;
+}
+
 *, *:after, *:before {
     box-sizing: border-box;
 }
 
+input, textarea, select, button, .button, keygen {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: $radius;
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 0px 3px 3px 0px;
+}
+button, .button, input[type="submit"], input[type="reset"] {
+    cursor: pointer;
+    box-shadow: inset 0px 1000px 0px rgba(210, 210, 210, 0.3);
+}
+ul {
+    width: 100%;
+    padding: 0;
+    margin: 15px 0;
+    list-style: none;
+    li {
+        word-break: break-word;
+        padding: 5px;
+        border-bottom: 1px solid #ecf0f1;
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+}
+.info {
+    color: gray;
+    font-size: 11px;
+    padding: 0px 8px;
+}
+
 .window {
     position: absolute 0px 0px;
+    min-width: 190px;
     width: 500px;
     height: 300px;
+    min-height: 190px;
     box-shadow: $default-shadow;
+    background: color(rgb(210, 210, 210) alpha(30%));
+    padding: 0px 7px 7px 7px;
 
     .title {
         cursor: move;
@@ -40,8 +86,8 @@ body {
         width: 100%;
         height: 30px;
         line-height: 30px;
-        padding: 0px 10px;
-        background: color(rgb(210, 210, 210) alpha(30%));
+        padding: 0px 5px;
+        color: rgba(0, 0, 0, 0.7);
         .hide {
             display: inline-block;
             position: absolute;
@@ -60,6 +106,8 @@ body {
         background: white;
         width: 100%;
         height: 270px;
+        overflow: auto;
+        border-radius: $radius;
     }
 }
 
@@ -91,13 +139,26 @@ body {
                 font-size: 30px;
                 text-shadow: 0px 3px 0px color(black alpha(10%));
                 color: white;
-                i {/*
-                    border-bottom: 3px solid white;
-                    border-radius: 1px;
-                    box-shadow: 0px 3px 0px color(black alpha(10%));*/
+                i {
                 }
             }
         }
+    }
+}
+
+
+
+/*** Calculator ***/
+.calc {
+    .calc-input {
+        width: 70%;
+    }
+    .calc-button {
+        width: 26%;
+        float: right;
+    }
+    .calc-results {
+
     }
 }
 
