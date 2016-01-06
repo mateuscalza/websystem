@@ -5,7 +5,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var zIndex = 1;
-var math;
 var WindowDefaults = (function () {
     function WindowDefaults() {
     }
@@ -29,6 +28,33 @@ var WindowDefaults = (function () {
         }).find('.content').height(this.height() - 50);
     };
     return WindowDefaults;
+})();
+var DataConnector = (function () {
+    function DataConnector(dataNamespace) {
+        this.dataNamespace = dataNamespace;
+        this.socket = io.connect('http://' + location.hostname + ':8000/' + this.dataNamespace);
+    }
+    DataConnector.prototype.get = function (action, data) {
+        return $.ajax({
+            url: this.dataNamespace + '/' + action,
+            data: data,
+            type: 'GET'
+        });
+    };
+    DataConnector.prototype.post = function (action, data) {
+        return $.ajax({
+            url: this.dataNamespace + '/' + action,
+            data: data,
+            type: 'POST'
+        });
+    };
+    DataConnector.prototype.on = function (action, callback) {
+        return this.socket.on(action, callback);
+    };
+    DataConnector.prototype.emit = function (action, data) {
+        return this.socket.emit.apply(this, arguments);
+    };
+    return DataConnector;
 })();
 var MenuIcon = (function () {
     function MenuIcon(icon, name) {
@@ -123,12 +149,61 @@ var FileManager = (function (_super) {
     __extends(FileManager, _super);
     function FileManager() {
         this.name = 'File Manager';
+        this.server = new DataConnector('file-manager');
+        this.main = new WindowElement(this.name);
         this.windows = [
-            new WindowElement(this.name)
+            this.main
         ];
         this.icon = new MenuIcon('fa-folder', this.name);
         _super.call(this);
+        this.mount();
+        this.navigate('/');
     }
+    FileManager.prototype.navigate = function (path) {
+        var self = this;
+        this.path = path;
+        this.url.val(this.path);
+        this.server.get('items', { path: this.path }).then(function (items) {
+            self.items = items;
+            self.render();
+        });
+    };
+    FileManager.prototype.render = function () {
+        var self = this;
+        this.results.empty();
+        this.items.forEach(function (item) {
+            var result = $('<a></a>', {
+                href: '#',
+                addClass: 'button file-manager-item',
+                text: item.name
+            })
+                .data('type', item.type)
+                .data('path', self.path.replace(/\/$/, '') + '/' + item.name)
+                .click(function () {
+                if ($(this).data('type') === 'dir') {
+                    self.navigate($(this).data('path'));
+                }
+            });
+            self.results.append(result);
+        });
+    };
+    FileManager.prototype.mount = function () {
+        var self = this;
+        this.main.contentElement.addClass('file-manager');
+        this.url = $('<input/>', {
+            rows: 1,
+            addClass: 'file-manager-input'
+        }).appendTo(this.main.contentElement);
+        this.go = $('<button></button>', {
+            text: 'Go',
+            addClass: 'file-manager-button'
+        }).appendTo(this.main.contentElement).click(function () {
+            self.navigate(self.url.val());
+        });
+        this.results = $('<div></div>', {
+            addClass: 'file-manager-results'
+        }).appendTo(this.main.contentElement);
+    };
     return FileManager;
 })(Application);
 var Calc = (function (_super) {

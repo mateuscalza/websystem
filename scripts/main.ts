@@ -2,11 +2,17 @@
 
 interface MathJS {
     eval(formula: string): any
-    format(input: any): any
+    format(input: any): string
+}
+declare var math: MathJS;
+
+interface FileManagerItem {
+    name: string;
+    type: string;
 }
 
 var zIndex: number = 1;
-var math: MathJS;
+
 
 class WindowDefaults {
     static width(): number {
@@ -34,10 +40,45 @@ class WindowDefaults {
     }
 }
 
+class DataConnector {
+
+    dataNamespace: string;
+    socket: SocketIOClient.Socket;
+
+    constructor(dataNamespace: string) {
+        this.dataNamespace = dataNamespace;
+        this.socket = io.connect('http://' + location.hostname + ':8000/' + this.dataNamespace);
+    }
+
+    get(action: string, data?: Object): PromiseLike<Object> {
+        return $.ajax({
+            url: this.dataNamespace + '/' + action,
+            data: data,
+            type: 'GET'
+        });
+    }
+
+    post(action: string, data?: Object): PromiseLike<Object> {
+        return $.ajax({
+            url: this.dataNamespace + '/' + action,
+            data: data,
+            type: 'POST'
+        });
+    }
+
+    on(action: string, callback: Function): SocketIOClient.Emitter {
+        return this.socket.on(action, callback);
+    }
+
+    emit(action: string, data?: Object): SocketIOClient.Emitter {
+        return this.socket.emit.apply(this, arguments);
+    }
+}
+
 class MenuIcon {
     element: JQuery;
 
-    constructor(icon, name){
+    constructor(icon, name) {
         this.element = $('<a></a>', {
             href: 'javascript:;',
             title: name
@@ -126,18 +167,18 @@ class WindowElement {
 
 abstract class Application {
     name: string;
-    windows: Array <WindowElement>;
+    windows: [WindowElement];
     icon: MenuIcon;
 
-    constructor(){
+    constructor() {
         var self = this;
 
-        self.icon.element.click(function () {
+        self.icon.element.click(function() {
             self.show();
         });
     }
 
-    show(){
+    show() {
         this.windows.forEach((windowElement) => {
             windowElement.element.toggle();
         });
@@ -146,15 +187,84 @@ abstract class Application {
 
 class FileManager extends Application {
 
-    constructor(){
+    server: DataConnector;
+    main: WindowElement;
+    url: JQuery;
+    go: JQuery;
+    results: JQuery;
+    items: [Object];
+    path: string;
+
+    constructor() {
         this.name = 'File Manager';
 
+        this.server = new DataConnector('file-manager');
+
+        this.main = new WindowElement(this.name);
+
         this.windows = [
-            new WindowElement(this.name)
+            this.main
         ];
         this.icon = new MenuIcon('fa-folder', this.name);
 
         super();
+
+        this.mount();
+        this.navigate('/');
+    }
+
+    navigate(path: string){
+        var self = this;
+
+        this.path = path;
+        this.url.val(this.path);
+
+        this.server.get('items', {path: this.path}).then(function(items: [Object]){
+            self.items = items;
+            self.render();
+        });
+    }
+
+    render(){
+        var self = this;
+        this.results.empty();
+        this.items.forEach(function(item: FileManagerItem){
+            let result = $('<a></a>', {
+                href: '#',
+                addClass: 'button file-manager-item',
+                text: item.name
+            })
+            .data('type', item.type)
+            .data('path', self.path.replace(/\/$/,'') + '/' + item.name)
+            .click(function(){
+                if($(this).data('type') === 'dir'){
+                    self.navigate($(this).data('path'));
+                }
+            });
+            self.results.append(result);
+        });
+    }
+
+    mount() {
+        var self = this;
+
+        this.main.contentElement.addClass('file-manager');
+
+        this.url = $('<input/>', {
+            rows: 1,
+            addClass: 'file-manager-input'
+        }).appendTo(this.main.contentElement);
+
+        this.go = $('<button></button>', {
+            text: 'Go',
+            addClass: 'file-manager-button'
+        }).appendTo(this.main.contentElement).click(function(){
+            self.navigate(self.url.val());
+        });
+
+        this.results = $('<div></div>', {
+            addClass: 'file-manager-results'
+        }).appendTo(this.main.contentElement);
     }
 
 }
@@ -166,7 +276,7 @@ class Calc extends Application {
     button: JQuery;
     results: JQuery;
 
-    constructor(){
+    constructor() {
         this.name = 'Calculator';
 
         this.main = new WindowElement(this.name);
@@ -179,7 +289,7 @@ class Calc extends Application {
         this.mount();
     }
 
-    mount(){
+    mount() {
         this.main.contentElement.addClass('calc');
 
         this.input = $('<input/>', {
@@ -197,11 +307,11 @@ class Calc extends Application {
         }).appendTo(this.main.contentElement);
     }
 
-    calculate(event: Event){
+    calculate(event: Event) {
         let formula: string = this.input.val();
         let result: JQuery = $('<li></li>');
         try {
-            if(!formula.trim().length){
+            if (!formula.trim().length) {
                 throw new Error('Empty formula');
             }
             let formulaElement: JQuery = $('<span></span>', {
@@ -209,7 +319,7 @@ class Calc extends Application {
             });
             formulaElement.text(formula.replace(/([^A-Za-z0-9\.])/gi, ' $1 ').replace(/\s\s+/gi, ' ').trim());
             result.append(math.format(math.eval(formula)), formulaElement);
-        } catch(err) {
+        } catch (err) {
             let errElement = $('<i></i>').text(err.message);
             result.append(errElement);
         }

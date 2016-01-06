@@ -26,9 +26,17 @@ var startSocket = function() {
     return module.exports.currentSocket = Socket.start();
 };
 
+var initApplications = function() {
+    return module.exports.applications = {
+        fileManager: require('./applications/FileManager')(module.exports.currentWebServer, module.exports.currentSocket)
+    };
+};
+
 module.exports.startWebServer = function() {
     startSocket();
     WebServer.port = settings.web.port;
     WebServer.scope = this;
-    return this.currentWebServer = WebServer.start();
+    module.exports.currentWebServer = WebServer.start();
+    initApplications();
+    return module.exports.currentWebServer;
 };

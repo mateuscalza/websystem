@@ -25,7 +25,9 @@ WebServer.prototype.start = function() {
 
     // Index
     this.server.get('/', function(req, res) {
+        console.log('hum');
         fs.readFile(__dirname + '/../web/index.html', 'utf8', function(err, text) {
+            console.log(text);
             if (err) {
                 console.error(err);
             }
@@ -54,6 +56,7 @@ WebServer.prototype.start = function() {
 
     // Start server
     this.server.listen(settings.web.port);
+    console.log('WebSystem started on port ' + settings.web.port);
 
     return this;
 };

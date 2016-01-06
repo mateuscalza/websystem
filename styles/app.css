@@ -39,6 +39,7 @@ body {
 }
 
 input, textarea, select, button, .button, keygen {
+    float: left;
     background: white;
     border: 1px solid rgba(0,0,0,0.1);
     border-radius: $radius;
@@ -159,6 +160,22 @@ ul {
     }
     .calc-results {
 
+    }
+}
+
+.file-manager {
+    .calc-input {
+        width: 70%;
+    }
+    .file-manager-go {
+        width: 26%;
+        float: right;
+    }
+    .file-manager-results {
+        display: block;
+        clear: both;
+        a {
+        }
     }
 }
 

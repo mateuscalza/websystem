@@ -36,6 +36,7 @@ body {
 }
 
 input, textarea, select, button, .button, keygen {
+    float: left;
     background: white;
     border: 1px solid #000000;
     border: 1px solid rgba(0,0,0,0.1);
@@ -166,6 +167,22 @@ ul li:last-child {
     float: right;
 }
 .calc .calc-results {}
+
+.file-manager .calc-input {
+    width: 70%;
+}
+
+.file-manager .file-manager-go {
+    width: 26%;
+    float: right;
+}
+
+.file-manager .file-manager-results {
+    display: block;
+    clear: both;
+}
+
+.file-manager .file-manager-results a {}
 
 /*
 .box {
