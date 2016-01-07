@@ -1,5 +1,7 @@
 var express = require('express'),
-    fs = require('fs');
+    fs = require('fs'),
+    publicIp = require('public-ip'),
+    networkInterfaces = require('os').networkInterfaces;
 
 /**
 * Constructs a WebServer.
@@ -56,7 +58,17 @@ WebServer.prototype.start = function() {
 
     // Start server
     this.server.listen(settings.web.port);
-    console.log('WebSystem started on port ' + settings.web.port);
+    var interfaces = networkInterfaces();
+    for(index in interfaces){
+        interfaces[index].forEach(function(address){
+            if(address.family === 'IPv4'){
+                console.log('http://' + address.address + ':' + settings.web.port);
+            }
+        });
+    }
+    publicIp.v4(function (err, ip) {
+        console.log('http://' + ip + ':' + settings.web.port);
+    });
 
     return this;
 };

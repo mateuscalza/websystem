@@ -182,7 +182,13 @@ ul li:last-child {
     clear: both;
 }
 
-.file-manager .file-manager-results a {}
+.file-manager .file-manager-results a {
+    text-decoration: none;
+}
+
+.file-manager .file-manager-results a:active, .file-manager .file-manager-results a:focus, .file-manager .file-manager-results a:visited, .file-manager .file-manager-results a:hover {
+    color: #4F5050;
+}
 
 /*
 .box {

@@ -175,6 +175,10 @@ ul {
         display: block;
         clear: both;
         a {
+            text-decoration: none;
+            &:active, &:focus, &:visited, &:hover {
+                color: $gray;
+            }
         }
     }
 }

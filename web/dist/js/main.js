@@ -5,6 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var zIndex = 1;
+var activatedWindow;
 var WindowDefaults = (function () {
     function WindowDefaults() {
     }
@@ -79,6 +80,7 @@ var WindowElement = (function () {
         this.contentElement = $('<div></div>', {
             addClass: 'content'
         });
+        var self = this;
         this.titleElement.on('dblclick', function (evt) {
             evt.preventDefault();
             evt.stopPropagation();
@@ -107,6 +109,7 @@ var WindowElement = (function () {
                 var actualZIndex = $(this).css('zIndex');
                 if (!$.isNumeric(actualZIndex) || parseInt(actualZIndex) != zIndex) {
                     $(this).css('zIndex', ++zIndex);
+                    activatedWindow = self;
                 }
             }
         });
@@ -127,39 +130,72 @@ var WindowElement = (function () {
                 $(this).css('zIndex', ++zIndex);
             }
         });
+        this.watch = {
+            keydown: [],
+            keyup: [],
+            keypress: []
+        };
         this.element = newWindowElement;
+        this.events();
     }
+    WindowElement.prototype.events = function () {
+        var self = this;
+        $(document).keydown(function (evt) {
+            if (!$(evt.target).closest('input, textarea, select').length && self === activatedWindow) {
+                var selfEvent = this;
+                self.watch['keydown'].forEach(function (callback) {
+                    callback.call(selfEvent, evt);
+                });
+            }
+        });
+        $(document).keyup(function (evt) {
+            if (!$(evt.target).closest('input, textarea, select').length && self === activatedWindow) {
+                var selfEvent = this;
+                self.watch['keypress'].forEach(function (callback) {
+                    callback.call(selfEvent, evt);
+                });
+            }
+        });
+        $(document).keypress(function (evt) {
+            if (!$(evt.target).closest('input, textarea, select').length && self === activatedWindow) {
+                var selfEvent = this;
+                self.watch['keyup'].forEach(function (callback) {
+                    callback.call(selfEvent, evt);
+                });
+            }
+        });
+    };
+    WindowElement.prototype.on = function (name, callback) {
+        if (!this.watch[name])
+            this.watch[name] = [];
+        this.watch[name].push(callback);
+    };
     return WindowElement;
 })();
 var Application = (function () {
     function Application() {
         var self = this;
         self.icon.element.click(function () {
-            self.show();
+            self.toggle();
+            activatedWindow = self.windows[0];
         });
     }
-    Application.prototype.show = function () {
+    Application.prototype.toggle = function () {
         this.windows.forEach(function (windowElement) {
             windowElement.element.toggle();
         });
     };
     return Application;
 })();
-var FileManager = (function (_super) {
-    __extends(FileManager, _super);
-    function FileManager() {
-        this.name = 'File Manager';
-        this.server = new DataConnector('file-manager');
-        this.main = new WindowElement(this.name);
-        this.windows = [
-            this.main
-        ];
-        this.icon = new MenuIcon('fa-folder', this.name);
-        _super.call(this);
+var FileManagerWindow = (function (_super) {
+    __extends(FileManagerWindow, _super);
+    function FileManagerWindow(title, server) {
+        this.server = server;
+        _super.call(this, title);
         this.mount();
         this.navigate('/');
     }
-    FileManager.prototype.navigate = function (path) {
+    FileManagerWindow.prototype.navigate = function (path) {
         var self = this;
         this.path = path;
         this.url.val(this.path);
@@ -168,41 +204,73 @@ var FileManager = (function (_super) {
             self.render();
         });
     };
-    FileManager.prototype.render = function () {
+    FileManagerWindow.prototype.back = function () {
+        console.log('go back bitches!');
+    };
+    FileManagerWindow.prototype.render = function () {
         var self = this;
         this.results.empty();
         this.items.forEach(function (item) {
+            var path = self.path.replace(/\/$/, '') + '/' + item.name;
             var result = $('<a></a>', {
-                href: '#',
+                href: item.type === 'dir' ? '#' : '/download?file=' + encodeURI(path),
                 addClass: 'button file-manager-item',
                 text: item.name
             })
                 .data('type', item.type)
-                .data('path', self.path.replace(/\/$/, '') + '/' + item.name)
+                .data('path', path)
                 .click(function () {
                 if ($(this).data('type') === 'dir') {
                     self.navigate($(this).data('path'));
                 }
             });
+            if (item.type !== 'dir') {
+                result.attr('download', 'download');
+                result.prepend('<i class="fa fa-file"></i> ');
+            }
+            else {
+                result.prepend('<i class="fa fa-folder"></i> ');
+            }
             self.results.append(result);
         });
     };
-    FileManager.prototype.mount = function () {
+    FileManagerWindow.prototype.mount = function () {
         var self = this;
-        this.main.contentElement.addClass('file-manager');
+        this.contentElement.addClass('file-manager');
         this.url = $('<input/>', {
             rows: 1,
             addClass: 'file-manager-input'
-        }).appendTo(this.main.contentElement);
+        }).appendTo(this.contentElement);
         this.go = $('<button></button>', {
             text: 'Go',
             addClass: 'file-manager-button'
-        }).appendTo(this.main.contentElement).click(function () {
+        }).appendTo(this.contentElement).click(function () {
             self.navigate(self.url.val());
         });
         this.results = $('<div></div>', {
             addClass: 'file-manager-results'
-        }).appendTo(this.main.contentElement);
+        }).appendTo(this.contentElement);
+        this.on('keypress', function (evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            self.back();
+        });
+    };
+    return FileManagerWindow;
+})(WindowElement);
+var FileManager = (function (_super) {
+    __extends(FileManager, _super);
+    function FileManager() {
+        this.name = 'File Manager';
+        this.server = new DataConnector('file-manager');
+        this.windows = [
+            new FileManagerWindow(this.name, this.server)
+        ];
+        this.icon = new MenuIcon('fa-folder', this.name);
+        _super.call(this);
+    }
+    FileManager.prototype.newWindow = function () {
+        this.windows.push(new FileManagerWindow(this.name, this.server));
     };
     return FileManager;
 })(Application);
@@ -251,6 +319,12 @@ var Calc = (function (_super) {
     };
     return Calc;
 })(Application);
+var applicationManager = {
+    open: function () {
+    },
+    close: function () {
+    }
+};
 new FileManager();
 new Calc();
 

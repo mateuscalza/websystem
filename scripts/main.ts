@@ -11,7 +11,9 @@ interface FileManagerItem {
     type: string;
 }
 
+
 var zIndex: number = 1;
+var activatedWindow: WindowElement;
 
 
 class WindowDefaults {
@@ -93,7 +95,7 @@ class WindowElement {
     element: JQuery;
     contentElement: JQuery;
     titleElement: JQuery;
-
+    watch: any;
 
     constructor(title: string) {
         var newWindowElement = $('<div></div>', {
@@ -106,6 +108,7 @@ class WindowElement {
             addClass: 'content'
         });
 
+        var self = this;
         this.titleElement.on('dblclick', function(evt) {
             evt.preventDefault();
             evt.stopPropagation();
@@ -138,6 +141,7 @@ class WindowElement {
                 let actualZIndex = $(this).css('zIndex');
                 if (!$.isNumeric(actualZIndex) || parseInt(actualZIndex) != zIndex) {
                     $(this).css('zIndex', ++zIndex);
+                    activatedWindow = self;
                 }
             }
         });
@@ -161,7 +165,48 @@ class WindowElement {
             }
         });
 
+        this.watch = {
+            keydown: [],
+            keyup: [],
+            keypress: []
+        };
         this.element = newWindowElement;
+        this.events();
+    }
+
+    events(): void {
+        var self = this;
+        $(document).keydown(function(evt){
+            if(!$(evt.target).closest('input, textarea, select').length && self === activatedWindow){
+                var selfEvent = this;
+                self.watch['keydown'].forEach(function(callback){
+                    callback.call(selfEvent, evt);
+                });
+            }
+        });
+
+        $(document).keyup(function(evt){
+            if(!$(evt.target).closest('input, textarea, select').length && self === activatedWindow){
+                var selfEvent = this;
+                self.watch['keypress'].forEach(function(callback){
+                    callback.call(selfEvent, evt);
+                });
+            }
+        });
+
+        $(document).keypress(function(evt){
+            if(!$(evt.target).closest('input, textarea, select').length && self === activatedWindow){
+                var selfEvent = this;
+                self.watch['keyup'].forEach(function(callback){
+                    callback.call(selfEvent, evt);
+                });
+            }
+        });
+    }
+
+    on(name, callback): void {
+        if(!this.watch[name]) this.watch[name] = [];
+        this.watch[name].push(callback);
     }
 }
 
@@ -174,40 +219,31 @@ abstract class Application {
         var self = this;
 
         self.icon.element.click(function() {
-            self.show();
+            self.toggle();
+            activatedWindow = self.windows[0];
         });
     }
 
-    show() {
+    toggle() {
         this.windows.forEach((windowElement) => {
             windowElement.element.toggle();
         });
     }
 }
 
-class FileManager extends Application {
+class FileManagerWindow extends WindowElement {
 
     server: DataConnector;
-    main: WindowElement;
     url: JQuery;
     go: JQuery;
     results: JQuery;
     items: [Object];
     path: string;
 
-    constructor() {
-        this.name = 'File Manager';
+    constructor(title: string, server: DataConnector) {
+        this.server = server;
 
-        this.server = new DataConnector('file-manager');
-
-        this.main = new WindowElement(this.name);
-
-        this.windows = [
-            this.main
-        ];
-        this.icon = new MenuIcon('fa-folder', this.name);
-
-        super();
+        super(title);
 
         this.mount();
         this.navigate('/');
@@ -225,22 +261,35 @@ class FileManager extends Application {
         });
     }
 
+    back(){
+        console.log('go back bitches!');
+    }
+
     render(){
         var self = this;
         this.results.empty();
         this.items.forEach(function(item: FileManagerItem){
+            let path = self.path.replace(/\/$/,'') + '/' + item.name;
             let result = $('<a></a>', {
-                href: '#',
+                href: item.type === 'dir' ? '#' : '/download?file=' + encodeURI(path),
                 addClass: 'button file-manager-item',
                 text: item.name
             })
             .data('type', item.type)
-            .data('path', self.path.replace(/\/$/,'') + '/' + item.name)
+            .data('path', path)
             .click(function(){
                 if($(this).data('type') === 'dir'){
                     self.navigate($(this).data('path'));
                 }
             });
+
+            if(item.type !== 'dir'){
+                result.attr('download', 'download');
+                result.prepend('<i class="fa fa-file"></i> ');
+            } else {
+                result.prepend('<i class="fa fa-folder"></i> ');
+            }
+
             self.results.append(result);
         });
     }
@@ -248,23 +297,54 @@ class FileManager extends Application {
     mount() {
         var self = this;
 
-        this.main.contentElement.addClass('file-manager');
+        this.contentElement.addClass('file-manager');
 
         this.url = $('<input/>', {
             rows: 1,
             addClass: 'file-manager-input'
-        }).appendTo(this.main.contentElement);
+        }).appendTo(this.contentElement);
 
         this.go = $('<button></button>', {
             text: 'Go',
             addClass: 'file-manager-button'
-        }).appendTo(this.main.contentElement).click(function(){
+        }).appendTo(this.contentElement).click(function(){
             self.navigate(self.url.val());
         });
 
         this.results = $('<div></div>', {
             addClass: 'file-manager-results'
-        }).appendTo(this.main.contentElement);
+        }).appendTo(this.contentElement);
+
+        this.on('keypress', function(evt){
+            evt.preventDefault();
+            evt.stopPropagation();
+            self.back();
+        });
+    }
+
+}
+
+class FileManager extends Application {
+
+    main: FileManagerWindow;
+    server: DataConnector;
+
+    constructor() {
+        this.name = 'File Manager';
+
+        this.server = new DataConnector('file-manager');
+
+        this.windows = [
+            new FileManagerWindow(this.name, this.server)
+        ];
+
+        this.icon = new MenuIcon('fa-folder', this.name);
+
+        super();
+    }
+
+    newWindow(){
+        this.windows.push(new FileManagerWindow(this.name, this.server));
     }
 
 }
@@ -328,6 +408,14 @@ class Calc extends Application {
     }
 }
 
+var applicationManager = {
+    open(){
+
+    },
+    close(){
+
+    }
+};
 
 new FileManager();
 new Calc();
