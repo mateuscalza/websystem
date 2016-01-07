@@ -1,5 +1,5 @@
-# WebSystem
-Manage your operating system remotely. Project is starting, please WAIT.
+# WebSystem (Project is starting, please WAIT)
+Manage your operating system remotely.
 
 ## Installation
 
@@ -11,7 +11,7 @@ $ npm install websystem --save
 
 ```JavaScript
 // Require websystem
-var websystem = require('./');
+var websystem = require('websystem');
 
 // Start web server that provides control
 websystem.startWebServer();
