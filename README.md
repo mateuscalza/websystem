@@ -1,4 +1,4 @@
-# WebSystem (Project is starting, please WAIT)
+# WebSystem (UNDER DEVELOPMENT)
 Manage your operating system remotely.
 
 ## Installation
